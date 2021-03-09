@@ -111,6 +111,7 @@ func (r *reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 	}
 
 	if dns != nil {
+		if dns.Spec.ManagementState != operatorv1.Unmanaged {
 		// Ensure we have all the necessary scaffolding on which to place dns instances.
 		if err := r.ensureDNSNamespace(); err != nil {
 			errs = append(errs, fmt.Errorf("failed to ensure dns namespace: %v", err))
@@ -145,6 +146,7 @@ func (r *reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 				errs = append(errs, fmt.Errorf("failed to ensure external name for openshift service: %v", err))
 			}
 		}
+	}
 	}
 
 	// Log in case of errors as the controller's logs get eaten.
