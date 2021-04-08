@@ -146,6 +146,23 @@ func (r *reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 					errs = append(errs, fmt.Errorf("failed to ensure external name for openshift service: %v", err))
 				}
 			}
+		} else {
+			clusterDomain := "cluster.local"
+			clusterIP, err := r.getClusterIPFromNetworkConfig()
+			if err != nil {
+				errs = append(errs, fmt.Errorf("failed to get cluster IP from network config: %v", err))
+			}
+			haveDNSDaemonset, dnsDaemonset, err := r.currentDNSDaemonSet(dns)
+			if err != nil {
+				errs = append(errs, err)
+			}
+			haveNodeResolverDaemonset, nodeResolverDaemonset, err := r.currentNodeResolverDaemonSet()
+			if err != nil {
+				errs = append(errs, err)
+			}
+			if err := r.syncDNSStatus(dns, clusterIP, clusterDomain, haveDNSDaemonset, dnsDaemonset, haveNodeResolverDaemonset, nodeResolverDaemonset); err != nil {
+				errs = append(errs, fmt.Errorf("failed to sync status of dns %q: %w", dns.Name, err))
+			}
 		}
 	}
 
