@@ -53,6 +53,31 @@ func TestDNSStatusConditions(t *testing.T) {
 		{testIn{true, true, 3, 3, true, 1, 3, true}, testOut{true, true, true, true}},
 		{testIn{true, true, 2, 3, true, 3, 3, true}, testOut{false, true, true, true}},
 		{testIn{true, true, 0, 1, true, 0, 1, true}, testOut{true, true, false, true}},
+		{testIn{false, false, 0, 0, false, 0, 0, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 0, 0, true, 0, 0, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 0, 0, true, 0, 2, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 0, 2, true, 0, 0, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 0, 2, true, 0, 2, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 1, 2, true, 0, 2, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 0, 2, true, 1, 2, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 1, 2, true, 1, 2, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 1, 2, true, 2, 2, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 2, 2, true, 1, 2, false}, testOut{true, true, false, false}},
+		{testIn{false, true, 2, 2, true, 2, 2, false}, testOut{true, true, false, false}},
+		{testIn{true, true, 0, 0, true, 0, 0, false}, testOut{true, false, false, false}},
+		{testIn{true, true, 0, 0, true, 0, 2, false}, testOut{true, true, false, false}},
+		{testIn{true, true, 0, 2, true, 0, 0, false}, testOut{true, true, false, false}},
+		{testIn{true, true, 0, 2, true, 0, 2, false}, testOut{true, true, false, false}},
+		{testIn{true, true, 0, 2, true, 1, 2, false}, testOut{true, true, false, false}},
+		{testIn{true, true, 1, 2, true, 0, 2, false}, testOut{true, true, true, false}},
+		{testIn{true, true, 1, 2, true, 1, 2, false}, testOut{false, true, true, false}},
+		{testIn{true, true, 1, 2, true, 2, 2, false}, testOut{false, true, true, false}},
+		{testIn{true, true, 2, 2, true, 1, 2, false}, testOut{false, true, true, false}},
+		{testIn{true, true, 2, 2, true, 2, 2, false}, testOut{false, false, true, false}},
+		{testIn{true, true, 1, 3, true, 3, 3, false}, testOut{true, true, true, false}},
+		{testIn{true, true, 3, 3, true, 1, 3, false}, testOut{true, true, true, false}},
+		{testIn{true, true, 2, 3, true, 3, 3, false}, testOut{false, true, true, false}},
+		{testIn{true, true, 0, 1, true, 0, 1, false}, testOut{true, true, false, false}},
 	}
 
 	for i, tc := range testCases {
@@ -60,8 +85,6 @@ func TestDNSStatusConditions(t *testing.T) {
 			clusterIP string
 
 			degraded, progressing, available, upgradeable operatorv1.ConditionStatus
-
-			managementState operatorv1.ManagementState
 		)
 		if tc.inputs.haveClusterIP {
 			clusterIP = "1.2.3.4"
