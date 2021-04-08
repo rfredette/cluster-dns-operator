@@ -129,6 +129,7 @@ func (r *reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 		oldStatus.Versions, co.Status.Versions, r.OperatorReleaseVersion, r.CoreDNSImage,
 		r.OpenshiftCLIImage, r.KubeRBACProxyImage))
 	co.Status.Conditions = mergeConditions(co.Status.Conditions, computeOperatorDegradedCondition(&state.DNS))
+	co.Status.Conditions = mergeConditions(co.Status.Conditions, computeOperatorUpgradeableCondition(&state.DNS))
 
 	if !operatorStatusesEqual(*oldStatus, co.Status) {
 		if err := r.client.Status().Update(ctx, co); err != nil {
@@ -244,6 +245,32 @@ func checkDNSAvailable(dns *operatorv1.DNS) bool {
 	}
 
 	return false
+}
+
+// computeOperatorUpgradeableCondition computes the operator's current
+// Upgradeable status state by examining the Upgradeable status of the DNS
+// operator
+func computeOperatorUpgradeableCondition(dns *operatorv1.DNS) configv1.ClusterOperatorStatusCondition {
+	var upgradeable bool
+	for _, cond := range dns.Status.Conditions {
+		if cond.Type == operatorv1.OperatorStatusTypeUpgradeable && cond.Status == operatorv1.ConditionTrue {
+			upgradeable = true
+		}
+	}
+	if !upgradeable {
+		return configv1.ClusterOperatorStatusCondition{
+			Type:    configv1.OperatorUpgradeable,
+			Status:  configv1.ConditionFalse,
+			Reason:  "DNSNotUpgradeable",
+			Message: fmt.Sprintf("DNS %s is not upgradeable", dns.Name),
+		}
+	}
+	return configv1.ClusterOperatorStatusCondition{
+		Type:    configv1.OperatorUpgradeable,
+		Status:  configv1.ConditionTrue,
+		Reason:  "DNSUpgradeable",
+		Message: fmt.Sprintf("DNS %s is upgradeable", dns.Name),
+	}
 }
 
 // computeOperatorDegradedCondition computes the operator's current Degraded status state.
