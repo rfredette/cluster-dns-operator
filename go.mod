@@ -14,3 +14,5 @@ require (
 	k8s.io/client-go v0.21.0-rc.0
 	sigs.k8s.io/controller-runtime v0.9.0-alpha.1
 )
+
+replace github.com/openshift/api => github.com/rfredette/api v0.0.0-20210408165110-1f0361fb45cf
